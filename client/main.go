@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/binjip978/tftp/packets"
 )
@@ -19,15 +20,18 @@ import (
 // file - tftp file requested by client RRQ message
 // dest - where to store requested file
 type cfg struct {
-	addr string
-	file string
-	dest string
-	port int
+	addr    string
+	file    string
+	dest    string
+	port    int
+	timeout time.Duration
 }
 
 // Client request file over tftp protocol
 // TODO: add retry params
-type Client struct{}
+type Client struct {
+	Timeout time.Duration
+}
 
 func (c *Client) Request(addr string, filename string, wr io.Writer) error {
 	conn, err := net.ListenUDP("udp", nil)
@@ -49,9 +53,21 @@ func (c *Client) Request(addr string, filename string, wr io.Writer) error {
 	}
 
 	buffer := make([]byte, 516)
+	var lastAck uint16
 
 	for {
+		if c.Timeout != 0 {
+			_ = conn.SetReadDeadline(time.Now().Add(c.Timeout))
+		}
 		n, ra, err := conn.ReadFromUDP(buffer)
+		if os.IsTimeout(err) {
+			ack := &packets.Ack{Block: lastAck}
+			_, err = conn.WriteToUDP(ack.Encode(), ra)
+			if err != nil {
+				log.Fatalf("can't write ack to the server: %v", err)
+			}
+			continue
+		}
 		if err != nil {
 			log.Fatalf("can't read from connection: %v", err)
 		}
@@ -68,6 +84,7 @@ func (c *Client) Request(addr string, filename string, wr io.Writer) error {
 			}
 			// send ack to the server
 			ack := &packets.Ack{Block: d.Block}
+			lastAck = d.Block
 			_, err = conn.WriteToUDP(ack.Encode(), ra)
 			if err != nil {
 				log.Fatalf("can't write ack to the server: %v", err)
@@ -93,6 +110,7 @@ func main() {
 	flag.StringVar(&config.dest, "dest", "", "file path for request file")
 	flag.StringVar(&config.file, "rf", "", "filename for RRQ request")
 	flag.IntVar(&config.port, "port", 69, "server port")
+	flag.DurationVar(&config.timeout, "timeout", 0, "timeout for client retry, 0 no timeout")
 	flag.Parse()
 
 	if config.addr == "" {
