@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/binjip978/tftp/client"
 )
 
 // cfg defines parameters for cmdline tftp client
@@ -50,7 +52,7 @@ func main() {
 	}
 	defer f.Close()
 
-	c := &Client{}
+	c := &client.Client{}
 	addr := net.JoinHostPort(config.addr, strconv.Itoa(config.port))
 	err = c.Request(addr, config.file, f)
 	if err != nil {

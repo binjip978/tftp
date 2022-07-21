@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"encoding/binary"
@@ -16,6 +16,7 @@ type Client struct {
 	Timeout time.Duration
 }
 
+// Request downloads filename from tftp server and writes to io.Writer
 func (c *Client) Request(addr string, filename string, wr io.Writer) error {
 	conn, err := net.ListenUDP("udp", nil)
 	if err != nil {
