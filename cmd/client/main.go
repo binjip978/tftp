@@ -52,10 +52,11 @@ func main() {
 	}
 	defer f.Close()
 
-	c := &client.Client{}
+	c := &client.Client{Timeout: config.timeout}
 	addr := net.JoinHostPort(config.addr, strconv.Itoa(config.port))
 	err = c.Request(addr, config.file, f)
 	if err != nil {
+		os.Remove(f.Name())
 		log.Fatalf("can't request file %s: %v", config.file, err)
 	}
 
