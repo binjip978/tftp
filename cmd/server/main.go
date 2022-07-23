@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
+	"net"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/binjip978/tftp/server"
@@ -12,6 +13,7 @@ import (
 
 func main() {
 	filePath := flag.String("file", "", "file to serve via tftp (required)")
+	addr := flag.String("addr", "0.0.0.0", "server address")
 	port := flag.Int("port", 6900, "tftp server port")
 	flag.Parse()
 
@@ -26,5 +28,5 @@ func main() {
 		Retry:   5,
 	}
 
-	log.Fatal(srv.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", *port)))
+	log.Fatal(srv.ListenAndServe(net.JoinHostPort(*addr, strconv.Itoa(*port))))
 }
