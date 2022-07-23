@@ -24,24 +24,22 @@ type Server struct {
 }
 
 // FileHandler returns Handler that serve from file system path
-func FileHandler(path string) (Handler, error) {
+func FileHandler(path string) Handler {
 	return func(rf string) (io.ReadCloser, error) {
 		if filepath.Base(path) != rf {
 			return nil, errFileNotFound
 		}
 
-		_, err := os.Stat(path)
-		if err != nil {
+		f, err := os.Open(path)
+		if os.IsNotExist(err) {
 			return nil, errFileNotFound
 		}
-
-		f, err := os.Open(path)
 		if err != nil {
 			return nil, err
 		}
 
-		return f, err
-	}, nil
+		return f, nil
+	}
 }
 
 // BytesHandler returns Handler that serve specified bytes

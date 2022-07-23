@@ -8,14 +8,9 @@ import (
 )
 
 func main() {
-	handler, err := server.FileHandler("/Users/binjip978/Downloads/tiger.jpeg")
-	if err != nil {
-		panic(err)
-	}
-
 	srv := server.Server{
 		// Handler: server.BytesHandler([]byte("hello world")),
-		Handler: handler,
+		Handler: server.FileHandler("/Users/binjip978/Downloads/tiger.jpeg"),
 		Timeout: 2 * time.Second,
 		Retry:   5,
 	}
