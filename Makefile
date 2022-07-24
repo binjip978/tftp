@@ -3,11 +3,11 @@ all: test client server
 
 .PHONY: client
 client:
-	cd cmd/client && go build -o ../../tftp-client
+	cd cmd/tftp-client && go build -o ../../tftp-client
 
 .PHONY: server
 server:
-	cd cmd/server && go build -o ../../tftp-server
+	cd cmd/tftp-server && go build -o ../../tftp-server
 
 .PHONY: test
 test:
